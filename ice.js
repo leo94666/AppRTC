@@ -25,8 +25,8 @@ function handleIceRequest(req, resp) {
           'stun:SERVER_PUBLIC_IP:3478',
           'turn:SERVER_PUBLIC_IP:3478'
         ],
-        username: turn_username,
-        credential: password
+        username: leo,
+        credential: 11235813
       }
     ]
   })

@@ -1,11 +1,10 @@
 # docker build -t varfor/apprtc:v1.0 -f .\APPRTC_D . --build-arg "HTTP_PROXY=http://127.0.0.1:8087/" --build-arg "HTTPS_PROXY=https://127.0.0.1:8087"
 
-FROM ubuntu:20.04
+FROM ubuntu:16.04
 LABEL version="1.0" description="AppRTC Server" author="leo" 
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-EXPOSE 8080 8089 3478 3033 59000-65000
 WORKDIR /
 
 ENV GAE_VER 1.9.74
@@ -18,14 +17,10 @@ ENV PUBLIC_IP 127.0.0.1
 RUN apt update -y
 
 # Deps
-RUN apt install -y build-essential vim git curl wget unzip  libssl-dev openjdk-8-jdk supervisor
-
-RUN  apt install -y software-properties-common \
- && add-apt-repository ppa:deadsnakes/ppa \
- && apt install -y python3.7 python3-webtest-doc python3-pip
+RUN apt install -y build-essential vim git curl wget unzip python2.7 python-webtest-doc python-pip libssl-dev openjdk-8-jdk supervisor
 
 # NodeJS
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN apt install -y nodejs
 
 
@@ -94,4 +89,7 @@ COPY apprtc_supervisord.conf /
 
 COPY run.sh /
 RUN chmod +x /run.sh
+
+EXPOSE 8080 8089 3478 3033 59000-65000
+
 CMD /run.sh

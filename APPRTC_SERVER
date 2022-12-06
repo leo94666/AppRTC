@@ -1,14 +1,18 @@
-# docker build -t varfor/apprtc:v1.0 -f .\APPRTC_D .
+# docker build -t varfor/apprtc:v1.0 -f .\APPRTC_SERVER .
+
+# docker run --rm \
 #   -e Candidate=124.223.98.45 \
 #   -e ICE_IP=124.223.98.45 \
 #   -e ICE_PORT=3478 \
-#   -it varfor/apprtc
+#   -it varfor/apprtc:v1.0
+
 FROM ubuntu:16.04
+
 LABEL version="1.0" description="AppRTC Server" author="leo" 
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /webrtc
+WORKDIR /webrtc/
 
 ENV GAE_VER 1.9.74
 ENV GOLANG_VER 1.8.3
@@ -18,23 +22,23 @@ ENV COTURN_VER 4.5.0.7
 ENV Candidate 127.0.0.1
 
 ENV ICE_IP 127.0.0.1
-ENV ICE_PORT 127.0.0.1
-
-
+ENV ICE_PORT 3478
 
 RUN apt update -y
 
 # Deps
 RUN apt install -y build-essential vim git curl wget unzip python2.7 python-webtest-doc python-pip libssl-dev openjdk-8-jdk
 
-RUN python -m pip install --user --upgrade pip==20.2.4
-RUN pip install supervisor requests
-RUN pip install git+https://github.com/bendikro/supervisord-dependent-startup
+# RUN pip install --upgrade pip
+RUN python -m pip install --user --upgrade pip==20.3.4 -i https://pypi.tuna.tsinghua.edu.cn/simple/
+RUN pip install requests -i https://pypi.tuna.tsinghua.edu.cn/simple/
+RUN pip install supervisor -i https://pypi.tuna.tsinghua.edu.cn/simple/
+RUN pip install git+https://gitee.com/mirrors_bendikro/supervisord-dependent-startup.git
 
 # NodeJS
 RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt install -y nodejs
-RUN mkdir /webrtc_avconf/
+RUN mkdir -p /webrtc/log/
 
 # Golang
 ENV GOLANG_TAR go$GOLANG_VER.linux-amd64.tar.gz
@@ -54,19 +58,6 @@ ENV GAE_ZIP google_appengine_$GAE_VER.zip
 RUN wget https://storage.googleapis.com/appengine-sdks/featured/$GAE_ZIP
 RUN unzip $GAE_ZIP -d /usr/local
 ENV PATH $PATH:/usr/local/google_appengine
-
-# Coturn server
-# RUN wget https://github.com/libevent/libevent/releases/download/release-$LIBEVENT_VER-stable/libevent-$LIBEVENT_VER-stable.tar.gz
-# RUN tar xvfz libevent-$LIBEVENT_VER-stable.tar.gz
-# WORKDIR libevent-$LIBEVENT_VER-stable
-# RUN ./configure && make && make install
-# WORKDIR /
-# RUN wget http://turnserver.open-sys.org/downloads/v$COTURN_VER/turnserver-$COTURN_VER.tar.gz
-# RUN tar xvfz turnserver-$COTURN_VER.tar.gz
-# WORKDIR turnserver-$COTURN_VER
-# RUN ./configure && make && make install
-# RUN turnadmin -a -u ninefingers -r apprtc -p youhavetoberealistic
-# COPY turnserver.conf /etc/turnserver.conf
 
 # AppRTC
 WORKDIR /webrtc/
@@ -88,7 +79,7 @@ RUN npm install
 
 RUN grunt build
 
-EXPOSE 8080 8089 3478 3033 9001 59000-65000
+EXPOSE 8080 8089 3478 3033 9001
 
 WORKDIR /webrtc/apprtc/
 
@@ -97,11 +88,12 @@ COPY ice.js /webrtc/
 COPY constants.py /webrtc/apprtc/out/app_engine/constants.py
 
 # Clean up APT when done.
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY apprtc_supervisord.conf /
+COPY apprtc_supervisord.conf /webrtc/
 
 COPY run.sh /webrtc/
+
 RUN chmod +x /webrtc/run.sh
 
 CMD /webrtc/run.sh

@@ -10,7 +10,7 @@ FROM ubuntu:16.04
 
 LABEL version="1.0" description="AppRTC Server" author="leo" 
 
-ENV DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND = noninteractive
 
 WORKDIR /webrtc/
 
@@ -60,7 +60,7 @@ RUN unzip $GAE_ZIP -d /usr/local
 ENV PATH $PATH:/usr/local/google_appengine
 
 # AppRTC
-WORKDIR /webrtc/
+
 RUN git clone https://gitee.com/mcmeet_dev/apprtc.git
 
 WORKDIR /webrtc/apprtc/
@@ -81,10 +81,10 @@ RUN grunt build
 
 EXPOSE 8080 8089 3478 3033 9001
 
-WORKDIR /webrtc/apprtc/
-
 RUN npm install express
+
 COPY ice.js /webrtc/
+
 COPY constants.py /webrtc/apprtc/out/app_engine/constants.py
 
 # Clean up APT when done.

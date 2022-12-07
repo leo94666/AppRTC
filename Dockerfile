@@ -31,10 +31,6 @@ RUN a2ensite *ssl
 # apache 2 proxy SSL -> 8080
 #COPY apache2-proxy.conf /etc/apache2/conf-enabled
 
-# WS copy CA ssl certs
-RUN mkdir -p /cert
-COPY cert-pebble.pem /cert
-COPY key-pebble.pem /cert
 ###########
 
 # NodeJS
